@@ -134,7 +134,7 @@ impl<'a> ChangeBuilder for DefaultChangeBuilder<'a> {
 }
 
 /// a helper fn to build a transaction with common logic
-fn inner_build<
+pub fn inner_build<
     CB: ChangeBuilder,
     I: Iterator<Item = Result<TransactionInput, CellCollectorError>>,
 >(
