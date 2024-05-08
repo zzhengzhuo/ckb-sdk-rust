@@ -167,3 +167,35 @@ crate::jsonrpc!(pub struct LightClientRpcClient {
     pub fn get_peers(&self) -> Vec<RemoteNode>;
     pub fn local_node_info(&self) -> LocalNode;
 });
+
+crate::jsonrpc_async!(pub struct AsyncLightClientRpcClient {
+    // BlockFilter
+    pub async fn set_scripts(&self, scripts: Vec<ScriptStatus>, command: Option<SetScriptsCommand>) -> ();
+    pub async fn get_scripts(&self) -> Vec<ScriptStatus>;
+    pub async fn get_cells(&self, search_key: SearchKey, order: Order, limit: Uint32, after: Option<JsonBytes>) -> Pagination<Cell>;
+    pub async fn get_transactions(&self, search_key: SearchKey, order: Order, limit: Uint32, after: Option<JsonBytes>) -> Pagination<Tx>;
+    pub async fn get_cells_capacity(&self, search_key: SearchKey) -> CellsCapacity;
+
+    // Transaction
+    pub async fn send_transaction(&self, tx: Transaction) -> H256;
+
+    // Chain
+    pub async fn get_tip_header(&self) -> HeaderView;
+    pub async fn get_genesis_block(&self) -> BlockView;
+    pub async fn get_header(&self, block_hash: H256) -> Option<HeaderView>;
+    pub async fn get_transaction(&self, tx_hash: H256) -> Option<TransactionWithStatus>;
+    pub async fn estimate_cycles(&self, tx: Transaction)-> EstimateCycles;
+    /// Fetch a header from remote node. If return status is `not_found` will re-sent fetching request immediately.
+    ///
+    /// Returns: FetchStatus<HeaderView>
+    pub async fn fetch_header(&self, block_hash: H256) -> FetchStatus<HeaderView>;
+
+    /// Fetch a transaction from remote node. If return status is `not_found` will re-sent fetching request immediately.
+    ///
+    /// Returns: FetchStatus<TransactionWithHeader>
+    pub async fn fetch_transaction(&self, tx_hash: H256) -> FetchStatus<TransactionWithStatus>;
+
+    // Net
+    pub async fn get_peers(&self) -> Vec<RemoteNode>;
+    pub async fn local_node_info(&self) -> LocalNode;
+});

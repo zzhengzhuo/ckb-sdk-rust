@@ -108,6 +108,100 @@ crate::jsonrpc!(pub struct CkbRpcClient {
     pub fn calculate_dao_maximum_withdraw(&self, out_point: OutPoint, kind: DaoWithdrawingCalculationKind) -> Capacity;
 });
 
+crate::jsonrpc_async!(pub struct AsyncCkbRpcClient {
+    // Chain
+    pub async fn get_block(&self, hash: H256) -> Option<BlockView>;
+    pub async fn get_block_by_number(&self, number: BlockNumber) -> Option<BlockView>;
+    pub async fn get_block_hash(&self, number: BlockNumber) -> Option<H256>;
+    pub async fn get_block_filter(&self, block_hash: H256) -> Option<BlockFilter>;
+    pub async fn get_current_epoch(&self) -> EpochView;
+    pub async fn get_epoch_by_number(&self, number: EpochNumber) -> Option<EpochView>;
+    pub async fn get_header(&self, hash: H256) -> Option<HeaderView>;
+    pub async fn get_header_by_number(&self, number: BlockNumber) -> Option<HeaderView>;
+    pub async fn get_live_cell(&self, out_point: OutPoint, with_data: bool) -> CellWithStatus;
+    pub async fn get_tip_block_number(&self) -> BlockNumber;
+    pub async fn get_tip_header(&self) -> HeaderView;
+    pub async fn get_transaction(&self, hash: H256) -> Option<TransactionWithStatusResponse>;
+    pub async fn get_transaction_proof(
+        &self,
+        tx_hashes: Vec<H256>,
+        block_hash: Option<H256>
+    ) -> TransactionProof;
+    pub async fn verify_transaction_proof(&self, tx_proof: TransactionProof) -> Vec<H256>;
+    pub async fn get_transaction_and_witness_proof(&self, tx_hashes: Vec<H256>,
+        block_hash: Option<H256>) -> TransactionAndWitnessProof;
+    pub async fn verify_transaction_and_witness_proof(&self, tx_proof: TransactionAndWitnessProof) -> Vec<H256>;
+    pub async fn get_fork_block(&self, block_hash: H256) -> Option<BlockView>;
+    pub async fn get_consensus(&self) -> Consensus;
+    pub async fn get_deployments_info(&self) -> DeploymentsInfo;
+    pub async fn get_block_median_time(&self, block_hash: H256) -> Option<Timestamp>;
+    pub async fn get_block_economic_state(&self, block_hash: H256) -> Option<BlockEconomicState>;
+    pub async fn estimate_cycles(&self, tx: Transaction)-> EstimateCycles;
+    pub async fn get_fee_rate_statics(&self, target:Option<Uint64>) -> Option<FeeRateStatistics>;
+    pub async fn get_fee_rate_statistics(&self, target:Option<Uint64>) -> Option<FeeRateStatistics>;
+
+    // Indexer
+    pub async fn get_indexer_tip(&self) -> Option<Tip>;
+    pub async fn get_cells(&self, search_key: SearchKey, order: Order, limit: Uint32, after: Option<JsonBytes>) -> Pagination<Cell>;
+    pub async fn get_transactions(&self, search_key: SearchKey, order: Order, limit: Uint32, after: Option<JsonBytes>) -> Pagination<Tx>;
+    pub async fn get_cells_capacity(&self, search_key: SearchKey) -> Option<CellsCapacity>;
+
+    // Net
+    pub async fn get_banned_addresses(&self) -> Vec<BannedAddr>;
+    pub async fn get_peers(&self) -> Vec<RemoteNode>;
+    pub async fn local_node_info(&self) -> LocalNode;
+    pub async fn set_ban(
+        &self,
+        address: String,
+        command: String,
+        ban_time: Option<Timestamp>,
+        absolute: Option<bool>,
+        reason: Option<String>
+    ) -> ();
+    pub async fn sync_state(&self) -> SyncState;
+    pub async fn set_network_active(&self, state: bool) -> ();
+    pub async fn add_node(&self, peer_id: String, address: String) -> ();
+    pub async fn remove_node(&self, peer_id: String) -> ();
+    pub async fn clear_banned_addresses(&self) -> ();
+    pub async fn ping_peers(&self) -> ();
+
+    // Pool
+    pub async fn send_transaction(&self, tx: Transaction, outputs_validator: Option<OutputsValidator>) -> H256;
+    pub async fn remove_transaction(&self, tx_hash: H256) -> bool;
+    pub async fn tx_pool_info(&self) -> TxPoolInfo;
+    pub async fn clear_tx_pool(&self) -> ();
+    pub async fn get_raw_tx_pool(&self, verbose: Option<bool>) -> RawTxPool;
+    pub async fn tx_pool_ready(&self) -> bool;
+    pub async fn test_tx_pool_accept(&self, tx: Transaction, outputs_validator: Option<OutputsValidator>) -> EntryCompleted;
+
+    // Stats
+    pub async fn get_blockchain_info(&self) -> ChainInfo;
+
+    // Miner
+    pub async fn get_block_template(&self, bytes_limit: Option<Uint64>, proposals_limit: Option<Uint64>, max_version: Option<Version>) -> BlockTemplate;
+    pub async fn submit_block(&self, _work_id: String, _data: Block) -> H256;
+
+    // Alert
+    pub async fn send_alert(&self, alert: Alert) -> ();
+
+    // IntegrationTest
+    pub async fn process_block_without_verify(&self, data: Block, broadcast: bool) -> Option<H256>;
+    pub async fn truncate(&self, target_tip_hash: H256) -> ();
+    pub async fn generate_block(&self) -> H256;
+    pub async fn generate_epochs(&self, num_epochs: EpochNumberWithFraction) -> EpochNumberWithFraction;
+    pub async fn notify_transaction(&self, tx: Transaction) -> H256;
+    pub async fn calculate_dao_field(&self, block_template: BlockTemplate) -> JsonBytes;
+    pub async fn generate_block_with_template(&self, block_template: BlockTemplate) -> H256;
+
+    // Debug
+    pub async fn jemalloc_profiling_dump(&self) -> String;
+    pub async fn update_main_logger(&self, config: MainLoggerConfig) -> ();
+    pub async fn set_extra_logger(&self, name: String, config_opt: Option<ExtraLoggerConfig>) -> ();
+
+    // Experimental
+    pub async fn calculate_dao_maximum_withdraw(&self, out_point: OutPoint, kind: DaoWithdrawingCalculationKind) -> Capacity;
+});
+
 fn transform_cycles(cycles: Option<Vec<ckb_jsonrpc_types::Cycle>>) -> Vec<Cycle> {
     cycles
         .map(|c| c.into_iter().map(Into::into).collect())
